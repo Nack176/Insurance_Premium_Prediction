@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Insurance Premium Predictor{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #6366f1;
+            --border-color: #e5e7eb;
+            --shadow: rgba(0, 0, 0, 0.1);
+            --font-family: 'Inter', sans-serif;
+        }
+
+        .theme-light {
+            --bg-primary: #f8fafc;
+            --bg-secondary: #ffffff;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --accent-primary: #3b82f6;
+            --accent-secondary: #6366f1;
+            --border-color: #e5e7eb;
+            --shadow: rgba(0, 0, 0, 0.1);
+        }
+
+        .theme-dark {
+            --bg-primary: #1f2937;
+            --bg-secondary: #374151;
+            --text-primary: #f9fafb;
+            --text-secondary: #d1d5db;
+            --accent-primary: #60a5fa;
+            --accent-secondary: #818cf8;
+            --border-color: #4b5563;
+            --shadow: rgba(0, 0, 0, 0.3);
+        }
+
+        .theme-blue {
+            --bg-primary: #eff6ff;
+            --bg-secondary: #ffffff;
+            --text-primary: #1e40af;
+            --text-secondary: #3b82f6;
+            --accent-primary: #2563eb;
+            --accent-secondary: #1d4ed8;
+            --border-color: #93c5fd;
+            --shadow: rgba(37, 99, 235, 0.1);
+        }
+
+        .theme-green {
+            --bg-primary: #f0fdf4;
+            --bg-secondary: #ffffff;
+            --text-primary: #166534;
+            --text-secondary: #16a34a;
+            --accent-primary: #16a34a;
+            --accent-secondary: #15803d;
+            --border-color: #86efac;
+            --shadow: rgba(22, 163, 74, 0.1);
+        }
+
+        body {
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-family: var(--font-family);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        .card, .bg-white {
+            background-color: var(--bg-secondary) !important;
+            color: var(--text-primary) !important;
+            border-color: var(--border-color) !important;
+            box-shadow: 0 4px 6px var(--shadow) !important;
+        }
+
+        .text-gray-900, .text-gray-800, .text-gray-700 {
+            color: var(--text-primary) !important;
+        }
+
+        .text-gray-600, .text-gray-500, .text-gray-400 {
+            color: var(--text-secondary) !important;
+        }
+
+        .bg-indigo-500 {
+            background-color: var(--accent-primary) !important;
+        }
+
+        .bg-indigo-600 {
+            background-color: var(--accent-secondary) !important;
+        }
+
+        .text-indigo-500, .text-indigo-600 {
+            color: var(--accent-primary) !important;
+        }
+
+        .border-gray-300 {
+            border-color: var(--border-color) !important;
+        }
+
+        .bg-gray-100 {
+            background-color: var(--bg-secondary) !important;
+        }
+
+        .bg-gray-50 {
+            background-color: var(--bg-primary) !important;
+        }
+    </style>
+</head>
+<body class="{% if theme %}theme-{{ theme }}{% else %}theme-light{% endif %}">
+    <!-- Header -->
+    <header class="bg-indigo-600 shadow-lg">
+        <nav class="container mx-auto px-4 py-4">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center space-x-6">
+                    <h1 class="text-2xl font-bold text-white">Insurance Predictor</h1>
+                    <div class="hidden md:flex space-x-4">
+                        <a href="{% url 'home' %}" class="text-white hover:text-indigo-200 px-3 py-2 rounded-md text-sm font-medium transition duration-300">Home</a>
+                        <a href="{% url 'prediction' %}" class="text-white hover:text-indigo-200 px-3 py-2 rounded-md text-sm font-medium transition duration-300">Predict</a>
+                        <a href="{% url 'about' %}" class="text-white hover:text-indigo-200 px-3 py-2 rounded-md text-sm font-medium transition duration-300">About</a>
+                        <a href="{% url 'contact' %}" class="text-white hover:text-indigo-200 px-3 py-2 rounded-md text-sm font-medium transition duration-300">Contact</a>
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'dashboard' %}" class="text-white hover:text-indigo-200 px-3 py-2 rounded-md text-sm font-medium transition duration-300">Dashboard</a>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <!-- Theme Selector -->
+                    <div class="relative">
+                        <button id="theme-toggle" class="text-white hover:text-indigo-200 focus:outline-none focus:text-indigo-200 p-2 rounded-md">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zM21 5a2 2 0 00-2-2h-4a2 2 0 00-2 2v12a4 4 0 004 4h4a2 2 0 002-2V5z"></path>
+                            </svg>
+                        </button>
+                        <div id="theme-menu" class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg z-50 hidden">
+                            <div class="py-1">
+                                <button class="theme-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" data-theme="light">Light Theme</button>
+                                <button class="theme-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" data-theme="dark">Dark Theme</button>
+                                <button class="theme-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" data-theme="blue">Blue Theme</button>
+                                <button class="theme-option block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left" data-theme="green">Green Theme</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    {% if user.is_authenticated %}
+                        <span class="text-white">Welcome, {{ user.username }}!</span>
+                        <a href="{% url 'logout' %}" class="bg-red-500 hover:bg-red-600 text-white px-4 py-2 rounded-md text-sm font-medium transition duration-300">Logout</a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="text-white hover:text-indigo-200 px-3 py-2 rounded-md text-sm font-medium transition duration-300">Login</a>
+                        <a href="{% url 'registration' %}" class="bg-yellow-500 hover:bg-yellow-600 text-gray-900 px-4 py-2 rounded-md text-sm font-medium transition duration-300">Sign Up</a>
+                    {% endif %}
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Main Content -->
+    <main>
+        {% block content %}
+        {% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-8 mt-12">
+        <div class="container mx-auto px-4">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Insurance Predictor</h3>
+                    <p class="text-gray-300">Get accurate insurance premium predictions using advanced machine learning algorithms.</p>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="{% url 'home' %}" class="text-gray-300 hover:text-white transition duration-300">Home</a></li>
+                        <li><a href="{% url 'prediction' %}" class="text-gray-300 hover:text-white transition duration-300">Predict Premium</a></li>
+                        <li><a href="{% url 'about' %}" class="text-gray-300 hover:text-white transition duration-300">About</a></li>
+                        <li><a href="{% url 'contact' %}" class="text-gray-300 hover:text-white transition duration-300">Contact</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-lg font-semibold mb-4">Contact Info</h3>
+                    <p class="text-gray-300">Email: naineshshewade1@.com</p>
+                    <p class="text-gray-300">Phone: 9321641416</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 mt-8 pt-8 text-center">
+                <p class="text-gray-300">&copy; 2024 Insurance Premium Predictor. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
+    <script>
+        AOS.init();
+
+        // Theme Management
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeMenu = document.getElementById('theme-menu');
+        const themeOptions = document.querySelectorAll('.theme-option');
+        const body = document.body;
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.className = `theme-${savedTheme}`;
+
+        // Toggle theme menu
+        themeToggle.addEventListener('click', (e) => {
+            e.stopPropagation();
+            themeMenu.classList.toggle('hidden');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', () => {
+            themeMenu.classList.add('hidden');
+        });
+
+        // Theme selection
+        themeOptions.forEach(option => {
+            option.addEventListener('click', () => {
+                const selectedTheme = option.getAttribute('data-theme');
+
+                // Apply theme immediately
+                body.className = `theme-${selectedTheme}`;
+                localStorage.setItem('theme', selectedTheme);
+
+                // Save to server if user is authenticated
+                {% if user.is_authenticated %}
+                fetch('{% url "update_theme" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({ theme: selectedTheme })
+                });
+                {% endif %}
+
+                themeMenu.classList.add('hidden');
+            });
+        });
+    </script>
+</body>
+</html>

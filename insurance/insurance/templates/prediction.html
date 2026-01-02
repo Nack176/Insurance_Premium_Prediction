@@ -1,0 +1,347 @@
+{% extends "base.html" %}
+
+{% block title %}ML Prediction Interface{% endblock title %}
+
+
+{% block content %}
+
+<section class="text-gray-600 body-font -my-9">
+  <div class="container px-5 py-24 mx-auto">
+    <div class="flex flex-col text-center w-full mb-12">
+      <h1 class="sm:text-3xl text-2xl font-medium title-font mb-4 text-gray-900">Insurance Premium Prediction</h1>
+      <p class="lg:w-2/3 mx-auto leading-relaxed text-base">Explore the dataset, understand the model, and make predictions using our trained Random Forest Regressor.</p>
+        <br>
+        {% if error %}
+          <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <strong class="font-bold">Error: </strong>
+            <span class="block sm:inline">{{ error }}</span>
+          </div>
+        {% endif %}
+        {% if output %}
+          <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative" role="alert">
+            <strong class="font-bold">Prediction Result: </strong>
+            <span class="block sm:inline">${{ output }}</span>
+          </div>
+        {% endif %}
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="flex justify-center mb-8">
+      <div class="bg-white rounded-lg shadow-md p-1">
+        <button id="tab-data" class="tab-button px-6 py-3 rounded-md font-medium transition duration-300 bg-indigo-500 text-white">Data Overview</button>
+        <button id="tab-model" class="tab-button px-6 py-3 rounded-md font-medium transition duration-300 text-gray-600 hover:text-indigo-500">Model Info</button>
+        <button id="tab-predict" class="tab-button px-6 py-3 rounded-md font-medium transition duration-300 text-gray-600 hover:text-indigo-500">Prediction</button>
+        <button id="tab-results" class="tab-button px-6 py-3 rounded-md font-medium transition duration-300 text-gray-600 hover:text-indigo-500">Results</button>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div id="content-data" class="tab-content">
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Dataset Overview</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white p-6 rounded-lg">
+            <h3 class="text-lg font-semibold mb-2">Total Records</h3>
+            <p class="text-3xl font-bold">1,338</p>
+          </div>
+          <div class="bg-gradient-to-r from-green-500 to-green-600 text-white p-6 rounded-lg">
+            <h3 class="text-lg font-semibold mb-2">Average Age</h3>
+            <p class="text-3xl font-bold">39.2</p>
+          </div>
+          <div class="bg-gradient-to-r from-purple-500 to-purple-600 text-white p-6 rounded-lg">
+            <h3 class="text-lg font-semibold mb-2">Average BMI</h3>
+            <p class="text-3xl font-bold">30.7</p>
+          </div>
+          <div class="bg-gradient-to-r from-orange-500 to-orange-600 text-white p-6 rounded-lg">
+            <h3 class="text-lg font-semibold mb-2">Avg Premium</h3>
+            <p class="text-3xl font-bold">$13,270</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="content-model" class="tab-content hidden">
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Model Information</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div>
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">Algorithm</h3>
+            <div class="bg-gray-50 p-4 rounded-lg">
+              <p class="text-lg font-medium text-indigo-600 mb-2">Random Forest Regressor</p>
+              <p class="text-gray-600">Ensemble learning method that constructs multiple decision trees and merges their results.</p>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-xl font-semibold mb-4 text-gray-800">Model Performance</h3>
+            <div class="space-y-4">
+              <div class="bg-green-50 p-4 rounded-lg border-l-4 border-green-500">
+                <div class="flex justify-between">
+                  <span class="font-medium text-green-800">R² Score</span>
+                  <span class="text-green-600 font-bold">0.852</span>
+                </div>
+                <p class="text-sm text-green-600 mt-1">Explains 85.2% of variance in premiums</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="content-predict" class="tab-content hidden">
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Make a Prediction</h2>
+        <p class="text-gray-600 mb-6">Fill in the details below to get a personalized insurance premium prediction.</p>
+        <form method="POST" action="">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="space-y-6">
+            <div>
+              <label for="age" class="block text-sm font-medium text-gray-700 mb-2">Age</label>
+              <input type="number" id="age" name="age" min="18" max="100" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="Enter your age">
+            </div>
+            <div>
+              <label for="sex" class="block text-sm font-medium text-gray-700 mb-2">Gender</label>
+              <select id="sex" name="sex" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="" disabled selected>Select gender</option>
+                <option value="1">Male</option>
+                <option value="0">Female</option>
+              </select>
+            </div>
+            <div>
+              <label for="bmi" class="block text-sm font-medium text-gray-700 mb-2">BMI (Body Mass Index)</label>
+              <input type="number" id="bmi" name="bmi" step="0.1" min="10" max="50" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 25.5">
+            </div>
+          </div>
+          <div class="space-y-6">
+            <div>
+              <label for="children" class="block text-sm font-medium text-gray-700 mb-2">Number of Children</label>
+              <input type="number" id="children" name="children" min="0" max="10" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500" placeholder="e.g., 2">
+            </div>
+            <div>
+              <label for="smoker" class="block text-sm font-medium text-gray-700 mb-2">Are You a Smoker?</label>
+              <select id="smoker" name="smoker" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="" disabled selected>Select option</option>
+                <option value="1">Yes</option>
+                <option value="0">No</option>
+              </select>
+            </div>
+            <div>
+              <label for="region" class="block text-sm font-medium text-gray-700 mb-2">Select Your Region</label>
+              <select id="region" name="region" required class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500">
+                <option value="" disabled selected>Select region</option>
+                <option value="1">SouthWest</option>
+                <option value="2">NorthWest</option>
+                <option value="3">SouthEast</option>
+                <option value="4">NorthEast</option>
+              </select>
+            </div>
+          </div>
+        </div>
+        <div class="text-center mt-8">
+          <button type="submit" id="predict-btn" class="bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-8 rounded-lg transition duration-300 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+            Predict Premium
+          </button>
+        </div>
+        </form>
+      </div>
+    </div>
+
+    <div id="content-results" class="tab-content hidden">
+      <div class="bg-white rounded-lg shadow-lg p-8">
+        <h2 class="text-2xl font-bold mb-6 text-gray-800">Prediction Results</h2>
+        {% if output %}
+          <div class="text-center mb-8">
+            <div class="inline-block bg-gradient-to-r from-green-400 to-blue-500 text-white p-8 rounded-full shadow-lg">
+              <div class="text-6xl font-bold">${{ output }}</div>
+              <div class="text-xl mt-2">Estimated Premium</div>
+            </div>
+          </div>
+        {% else %}
+          <div class="text-center py-12">
+            <div class="text-gray-400 text-6xl mb-4">📊</div>
+            <h3 class="text-xl font-semibold text-gray-600 mb-2">No Prediction Yet</h3>
+            <p class="text-gray-500">Fill out the prediction form and submit to see your results here.</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+
+  </div>
+</section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Tab switching functionality
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabContents = document.querySelectorAll('.tab-content');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            // Remove active class from all buttons
+            tabButtons.forEach(btn => {
+                btn.classList.remove('bg-indigo-500', 'text-white');
+                btn.classList.add('text-gray-600');
+            });
+
+            // Add active class to clicked button
+            this.classList.add('bg-indigo-500', 'text-white');
+            this.classList.remove('text-gray-600');
+
+            // Hide all tab contents
+            tabContents.forEach(content => {
+                content.classList.add('hidden');
+            });
+
+            // Show the corresponding tab content
+            const tabId = this.id.replace('tab-', 'content-');
+            document.getElementById(tabId).classList.remove('hidden');
+        });
+    });
+
+    // Form validation for prediction form
+    const form = document.querySelector('#content-predict form');
+    if (form) {
+        const predictBtn = document.getElementById('predict-btn');
+        const ageInput = document.getElementById('age');
+        const sexSelect = document.getElementById('sex');
+        const bmiInput = document.getElementById('bmi');
+        const childrenInput = document.getElementById('children');
+        const smokerSelect = document.getElementById('smoker');
+        const regionSelect = document.getElementById('region');
+
+        // Function to show error message
+        function showError(input, message) {
+            input.classList.add('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+            input.classList.remove('border-gray-300', 'focus:border-indigo-500', 'focus:ring-indigo-200');
+            let errorDiv = input.parentElement.querySelector('.error-message');
+            if (!errorDiv) {
+                errorDiv = document.createElement('div');
+                errorDiv.className = 'error-message text-red-500 text-sm mt-1';
+                input.parentElement.appendChild(errorDiv);
+            }
+            errorDiv.textContent = message;
+        }
+
+        // Function to clear error message
+        function clearError(input) {
+            input.classList.remove('border-red-500', 'focus:border-red-500', 'focus:ring-red-200');
+            input.classList.add('border-gray-300', 'focus:border-indigo-500', 'focus:ring-indigo-200');
+            const errorDiv = input.parentElement.querySelector('.error-message');
+            if (errorDiv) {
+                errorDiv.remove();
+            }
+        }
+
+        // Function to validate individual fields
+        function validateField(input, validationFn, errorMessage) {
+            if (!validationFn(input.value)) {
+                showError(input, errorMessage);
+                return false;
+            } else {
+                clearError(input);
+                return true;
+            }
+        }
+
+        // Validation functions
+        function validateAge(value) {
+            const age = parseInt(value);
+            return !isNaN(age) && age >= 18 && age <= 100;
+        }
+
+        function validateSex(value) {
+            return value !== '';
+        }
+
+        function validateBMI(value) {
+            const bmi = parseFloat(value);
+            return !isNaN(bmi) && bmi >= 10 && bmi <= 50;
+        }
+
+        function validateChildren(value) {
+            const children = parseInt(value);
+            return !isNaN(children) && children >= 0 && children <= 10;
+        }
+
+        function validateSmoker(value) {
+            return value !== '';
+        }
+
+        function validateRegion(value) {
+            return value !== '';
+        }
+
+        // Add event listeners for real-time validation
+        if (ageInput) ageInput.addEventListener('input', function() {
+            validateField(ageInput, validateAge, 'Please enter a valid age between 18 and 100.');
+        });
+
+        if (sexSelect) sexSelect.addEventListener('change', function() {
+            validateField(sexSelect, validateSex, 'Please select your gender.');
+        });
+
+        if (bmiInput) bmiInput.addEventListener('input', function() {
+            validateField(bmiInput, validateBMI, 'Please enter a valid BMI between 10 and 50.');
+        });
+
+        if (childrenInput) childrenInput.addEventListener('input', function() {
+            validateField(childrenInput, validateChildren, 'Please enter a valid number of children (0-10).');
+        });
+
+        if (smokerSelect) smokerSelect.addEventListener('change', function() {
+            validateField(smokerSelect, validateSmoker, 'Please select whether you are a smoker.');
+        });
+
+        if (regionSelect) regionSelect.addEventListener('change', function() {
+            validateField(regionSelect, validateRegion, 'Please select your region.');
+        });
+
+        // Form submission validation
+        form.addEventListener('submit', function(e) {
+            let isValid = true;
+
+            if (ageInput) isValid &= validateField(ageInput, validateAge, 'Please enter a valid age between 18 and 100.');
+            if (sexSelect) isValid &= validateField(sexSelect, validateSex, 'Please select your gender.');
+            if (bmiInput) isValid &= validateField(bmiInput, validateBMI, 'Please enter a valid BMI between 10 and 50.');
+            if (childrenInput) isValid &= validateField(childrenInput, validateChildren, 'Please enter a valid number of children (0-10).');
+            if (smokerSelect) isValid &= validateField(smokerSelect, validateSmoker, 'Please select whether you are a smoker.');
+            if (regionSelect) isValid &= validateField(regionSelect, validateRegion, 'Please select your region.');
+
+            if (!isValid) {
+                e.preventDefault();
+                // Scroll to the first error
+                const firstError = document.querySelector('.error-message');
+                if (firstError) {
+                    firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            } else {
+                // Show loading state
+                if (predictBtn) {
+                    predictBtn.textContent = 'Predicting...';
+                    predictBtn.disabled = true;
+                }
+                // Switch to results tab after submission
+                setTimeout(() => {
+                    document.getElementById('tab-results').click();
+                }, 100);
+            }
+        });
+
+        // Clear errors when user starts typing/selecting
+        [ageInput, bmiInput, childrenInput].forEach(input => {
+            if (input) input.addEventListener('focus', function() {
+                clearError(input);
+            });
+        });
+
+        [sexSelect, smokerSelect, regionSelect].forEach(select => {
+            if (select) select.addEventListener('focus', function() {
+                clearError(select);
+            });
+        });
+    }
+});
+</script>
+
+{% endblock content %}
